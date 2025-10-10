@@ -74,8 +74,10 @@ void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin
     esp_rom_gpio_connect_out_signal(pin_sdio, SPI3_D_OUT_IDX, true, false);
   #endif
 #else
+   esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, true, false);
+#endif
     
-    delay(100);
+   delay(100);
 }
 
 void cmt_spi3_write(const uint8_t addr, const uint8_t dat)
