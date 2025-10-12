@@ -68,13 +68,9 @@ void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin
 
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
     // Pour ESP-IDF 5.x : utiliser les constantes directes
-  #if SPI_CMT == 2
-    esp_rom_gpio_connect_out_signal(pin_sdio, SPI2_D_OUT_IDX, true, false);
-  #elif SPI_CMT == 3
-    esp_rom_gpio_connect_out_signal(pin_sdio, SPI3_D_OUT_IDX, true, false);
-  #endif
+  esp_rom_gpio_connect_out_signal(pin_sdio, SPI2_D_OUT_IDX, true, false);   
 #else
-   esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, true, false);
+  esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, true, false);
 #endif
     
    delay(100);
