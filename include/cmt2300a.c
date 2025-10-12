@@ -618,7 +618,9 @@ uint8_t CMT2300A_GetRssiCode(void)
  * @return  dBm
  * *********************************************************/
 int CMT2300A_GetRssiDBm(void)
-{
+{   
+    int tmp = (int)CMT2300A_ReadReg(CMT2300A_CUS_RSSI_DBM);
+    ESP_LOGW("CMT" , "raw RSSI register = %d" , tmp);
     return (int)CMT2300A_ReadReg(CMT2300A_CUS_RSSI_DBM) - 128;
 }
 
