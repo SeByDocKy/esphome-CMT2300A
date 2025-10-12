@@ -90,6 +90,8 @@ public:
 
     int getRssiDBm();
 
+    int getRssiCode();
+
     bool setPALevel(const int8_t level);
 
     bool rxFifoAvailable();
