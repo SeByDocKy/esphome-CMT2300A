@@ -118,6 +118,12 @@ uint8_t CMT2300A::getDynamicPayloadSize(void)
     return result;
 }
 
+int CMT2300A::getRssiCode()
+{
+    return CMT2300A_GetRssiCode();
+}
+
+
 int CMT2300A::getRssiDBm()
 {
     return CMT2300A_GetRssiDBm();
