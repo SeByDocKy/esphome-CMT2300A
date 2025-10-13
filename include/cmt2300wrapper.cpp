@@ -6,7 +6,7 @@
 #include "cmt2300a.h"
 #include "cmt2300a_params_860.h"
 #include "cmt2300a_params_900.h"
-#include "Hoymiles.h"
+
 
 CMT2300A::CMT2300A(const uint8_t pin_sdio, const uint8_t pin_clk, const uint8_t pin_cs, const uint8_t pin_fcs, const uint32_t spi_speed)
 {
@@ -22,17 +22,17 @@ bool CMT2300A::begin(void)
     bool a,b;
     a = _init_pins();
     if(a){
-        Hoymiles.getMessageOutput()->println("CMT Begin ini_pin OK" );
+        ESP_LOGD("CMT", "Begin ini_pin OK" );
     }
     else{
-        Hoymiles.getMessageOutput()->println("CMT Begin ini_pin KO" );
+       ESP_LOGD("CMT", "Begin ini_pin KO" );
     }
     b = _init_radio();
     if(b){
-        Hoymiles.getMessageOutput()->println("CMT Begin ini_radio OK" );
+       ESP_LOGD("CMT", "Begin ini_radio OK" );
     }
     else{
-        Hoymiles.getMessageOutput()->println("CMT Begin ini_radio KO" );
+         ESP_LOGD("CMT", "Begin ini_radio KO" );
     }
     
     // return _init_pins() && _init_radio();
