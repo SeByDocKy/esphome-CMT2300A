@@ -6,7 +6,6 @@
 #include "cmt2300a.h"
 #include "cmt2300a_params_860.h"
 #include "cmt2300a_params_900.h"
-#include "esp_log.h"
 
 
 CMT2300A::CMT2300A(const uint8_t pin_sdio, const uint8_t pin_clk, const uint8_t pin_cs, const uint8_t pin_fcs, const uint32_t spi_speed)
@@ -20,23 +19,24 @@ CMT2300A::CMT2300A(const uint8_t pin_sdio, const uint8_t pin_clk, const uint8_t 
 
 bool CMT2300A::begin(void)
 {
-    bool a,b;
-    a = _init_pins();
-    if(a){
-        ESP_LOGD("CMT", "Begin ini_pin OK" );
-    }
-    else{
-       ESP_LOGD("CMT", "Begin ini_pin KO" );
-    }
-    b = _init_radio();
-    if(b){
-       ESP_LOGD("CMT", "Begin ini_radio OK" );
-    }
-    else{
-         ESP_LOGD("CMT", "Begin ini_radio KO" );
-    }
-    return a && b;
-    // return _init_pins() && _init_radio();
+    
+    // bool a,b;
+    // a = _init_pins();
+    // if(a){
+    //     ESP_LOGD("CMT", "Begin ini_pin OK" );
+    // }
+    // else{
+    //    ESP_LOGD("CMT", "Begin ini_pin KO" );
+    // }
+    // b = _init_radio();
+    // if(b){
+    //    ESP_LOGD("CMT", "Begin ini_radio OK" );
+    // }
+    // else{
+    //      ESP_LOGD("CMT", "Begin ini_radio KO" );
+    // }
+    // return a && b;
+    return _init_pins() && _init_radio();
 }
 
 bool CMT2300A::isChipConnected()
