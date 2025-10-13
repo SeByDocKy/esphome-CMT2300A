@@ -18,7 +18,23 @@ CMT2300A::CMT2300A(const uint8_t pin_sdio, const uint8_t pin_clk, const uint8_t 
 
 bool CMT2300A::begin(void)
 {
-    return _init_pins() && _init_radio();
+    bool a,b;
+    a = _init_pins();
+    if(a){
+        Hoymiles.getMessageOutput()->println("CMT Begin ini_pin OK" );
+    }
+    else{
+        Hoymiles.getMessageOutput()->println("CMT Begin ini_pin KO" );
+    }
+    b = _init_radio();
+    if(b){
+        Hoymiles.getMessageOutput()->println("CMT Begin ini_radio OK" );
+    }
+    else{
+        Hoymiles.getMessageOutput()->println("CMT Begin ini_radio KO" );
+    }
+    
+    // return _init_pins() && _init_radio();
 }
 
 bool CMT2300A::isChipConnected()
