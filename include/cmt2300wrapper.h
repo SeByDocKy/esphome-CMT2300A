@@ -22,6 +22,10 @@ public:
 
     bool begin(void);
 
+    bool _init_pins();
+
+    bool _init_radio();
+
     /**
      * Checks if the chip is connected to the SPI bus
      */
@@ -121,14 +125,15 @@ private:
     /**
      * initialize the GPIO pins
      */
-    bool _init_pins();
+    
+    // bool _init_pins();
 
     /**
      * initialize radio.
      * @warning This function assumes the SPI bus object's begin() method has been
      * previously called.
      */
-    bool _init_radio();
+    // bool _init_radio();
 
     int8_t _pin_sdio;
     int8_t _pin_clk;
