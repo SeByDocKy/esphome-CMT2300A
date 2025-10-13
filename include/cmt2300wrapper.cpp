@@ -34,7 +34,7 @@ bool CMT2300A::begin(void)
     else{
          ESP_LOGD("CMT", "Begin ini_radio KO" );
     }
-    
+    return a && b;
     // return _init_pins() && _init_radio();
 }
 
