@@ -40,6 +40,8 @@ bool CMT2300A::begin(void)
     //    Serial.println("Begin ini_radio OK" );
     // }
     // return a && b;
+
+    ESP_LOGI("CMT", "in begin");
     
     return _init_pins() && _init_radio();
 }
