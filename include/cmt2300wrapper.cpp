@@ -41,7 +41,7 @@ bool CMT2300A::begin(void)
     // }
     // return a && b;
 
-    ESP_LOGI("CMT", "in begin");
+    ESP_LOGD("CMT", "in begin");
     
     return _init_pins() && _init_radio();
 }
