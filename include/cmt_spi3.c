@@ -82,6 +82,9 @@ void cmt_spi3_write(const uint8_t addr, const uint8_t dat)
         .cmd = 1,
         .addr = ~addr,
         .length = 8,
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+        .rxlength=0,
+#else    
         .tx_buffer = &tx_data,
         .rx_buffer = NULL
     };
