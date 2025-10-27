@@ -24,7 +24,6 @@
 #include "cmt2300a_defs.h"
 #include "cmt2300a_hal.h"
 #include <stdint.h>
-#include <Print.h>
 
 #ifdef __cplusplus
 extern "C" {
