@@ -2,7 +2,8 @@
 #include <Arduino.h>
 #include <driver/spi_master.h>
 #include <esp_rom_gpio.h> // for esp_rom_gpio_connect_out_signal
-#include <driver/spi_slave.h>
+// #include <driver/spi_slave.h>
+#include <soc/spi_periph.h>
 
 SemaphoreHandle_t paramLock = NULL;
 #define SPI_PARAM_LOCK() \
@@ -66,7 +67,8 @@ void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin
 
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
     // Pour ESP-IDF 5.x : utiliser les constantes directes
-  // esp_rom_gpio_connect_out_signal(pin_sdio, SPI2_D_OUT_IDX, true, false);   
+  // esp_rom_gpio_connect_out_signal(pin_sdio, SPI2_D_OUT_IDX, true, false); 
+  esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, true, false);  
 #else
   esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, true, false);
 #endif
@@ -82,9 +84,9 @@ void cmt_spi3_write(const uint8_t addr, const uint8_t dat)
         .cmd = 1,
         .addr = ~addr,
         .length = 8,
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-        .rxlength = 0,
-#endif    
+// #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+//         .rxlength = 0,
+// #endif    
         .tx_buffer = &tx_data,
         .rx_buffer = NULL
     };
@@ -118,9 +120,9 @@ void cmt_spi3_write_fifo(const uint8_t* buf, const uint16_t len)
 
     spi_transaction_t t = {
         .length = 8,
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-        .rxlength = 0,
-#endif    
+// #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+//         .rxlength = 0,
+// #endif    
         .tx_buffer = &tx_data, // reference to write data
         .rx_buffer = NULL
     };
