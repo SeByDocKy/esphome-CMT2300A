@@ -83,7 +83,7 @@ void cmt_spi3_write(const uint8_t addr, const uint8_t dat)
         .addr = ~addr,
         .length = 8,
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-        .rxlength = 8,
+        .rxlength = 0,
 #endif    
         .tx_buffer = &tx_data,
         .rx_buffer = NULL
