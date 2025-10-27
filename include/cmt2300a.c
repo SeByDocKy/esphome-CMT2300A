@@ -742,6 +742,8 @@ void CMT2300A_SetAfcOvfTh(uint8_t afcOvfTh)
 bool CMT2300A_Init(void)
 {
     uint8_t tmp;
+    Print* _messageOutput = &Serial;
+    messageOutput->print("test enter here ");
 
     // ESP_LOGI("CMT2300","enter here");
 
