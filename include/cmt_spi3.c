@@ -118,6 +118,9 @@ void cmt_spi3_write_fifo(const uint8_t* buf, const uint16_t len)
 
     spi_transaction_t t = {
         .length = 8,
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+        .rxlength = 0,
+#endif    
         .tx_buffer = &tx_data, // reference to write data
         .rx_buffer = NULL
     };
