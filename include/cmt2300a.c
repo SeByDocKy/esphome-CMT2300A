@@ -21,6 +21,7 @@
 #include "cmt2300a.h"
 
 
+
 /*! ********************************************************
  * @name    CMT2300A_SoftReset
  * @desc    Soft reset.
