@@ -742,7 +742,7 @@ bool CMT2300A_Init(void)
 {
     uint8_t tmp;
 
-    Serial.print("enter here");
+    Serial.println("enter here");
 
     CMT2300A_SoftReset();
     CMT2300A_DelayMs(20);
