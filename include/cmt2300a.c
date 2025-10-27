@@ -20,8 +20,6 @@
 
 #include "cmt2300a.h"
 
-#include <stdio.h>
-#include "esp_log.h"
 
 /*! ********************************************************
  * @name    CMT2300A_SoftReset
@@ -744,7 +742,7 @@ bool CMT2300A_Init(void)
 {
     uint8_t tmp;
 
-    ESP_LOGI("CMT2300","enter here");
+    // ESP_LOGI("CMT2300","enter here");
 
     CMT2300A_SoftReset();
     CMT2300A_DelayMs(20);
