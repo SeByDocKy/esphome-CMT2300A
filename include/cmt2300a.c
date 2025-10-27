@@ -19,6 +19,7 @@
  */
 
 #include "cmt2300a.h"
+#include <arduino.h>
 
 /*! ********************************************************
  * @name    CMT2300A_SoftReset
