@@ -15,6 +15,7 @@ SemaphoreHandle_t paramLock = NULL;
 // for ESP32 this is the so-called HSPI
 // for ESP32-S2/S3/C3 this nomenclature does not really exist anymore,
 // it is simply the first externally usable hardware SPI master controller
+#define USE_HSPI_PORT
 #define SPI_CMT SPI2_HOST
 
 spi_device_handle_t spi_reg, spi_fifo;
