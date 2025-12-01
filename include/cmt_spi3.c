@@ -2,6 +2,9 @@
 #include <Arduino.h>
 #include <driver/spi_master.h>
 #include <esp_rom_gpio.h> // for esp_rom_gpio_connect_out_signal
+#ifdef ARDUINO
+#include <SPI.h>
+#endif
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
   #include <soc/spi_periph.h>
 #endif
