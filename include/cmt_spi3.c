@@ -17,7 +17,7 @@ SemaphoreHandle_t paramLock = NULL;
 // it is simply the first externally usable hardware SPI master controller
 // #define USE_HSPI_PORT
 
-#define SPI_CMT SPI2_HOST
+// #define SPI_CMT SPI2_HOST
 
 #if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
   #define SPI_CMT FSPI
