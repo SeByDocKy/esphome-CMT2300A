@@ -2,9 +2,7 @@
 #include <Arduino.h>
 #include <driver/spi_master.h>
 #include <esp_rom_gpio.h> // for esp_rom_gpio_connect_out_signal
-#ifdef ARDUINO
-#include <SPI.h>
-#endif
+
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
   #include <soc/spi_periph.h>
 #endif
@@ -22,11 +20,17 @@ SemaphoreHandle_t paramLock = NULL;
 
 // #define SPI_CMT SPI2_HOST
 
-#if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
-  #define SPI_CMT FSPI
+#if defined(ARDUINO_ESP32S3)
+     #define SPI_CMT FSPI
 #else
-  #define SPI_CMT SPI2_HOST
-#endf
+     #define SPI_CMT SPI2_HOST
+#endif
+
+// #if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+//   #define SPI_CMT FSPI
+// #else
+//   #define SPI_CMT SPI2_HOST
+// #endf
 
 
 
