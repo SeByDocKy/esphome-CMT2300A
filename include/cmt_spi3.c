@@ -19,6 +19,14 @@ SemaphoreHandle_t paramLock = NULL;
 
 #define SPI_CMT SPI2_HOST
 
+#if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+  #define SPI_CMT FSPI
+#else
+  #define SPI_CMT SPI2_HOST
+#endf
+
+
+
 spi_device_handle_t spi_reg, spi_fifo;
 
 void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin_cs, const int8_t pin_fcs, const uint32_t spi_speed)
