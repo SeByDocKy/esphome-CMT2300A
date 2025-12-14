@@ -42,7 +42,11 @@ void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin
 
     spi_bus_config_t buscfg = {
         .mosi_io_num = pin_sdio,
+  #if defined(ARDUINO_ESP32S3)
+        .miso_io_num = pin_sdio
+  #else
         .miso_io_num = -1, // single wire MOSI/MISO
+  #endif
         .sclk_io_num = pin_clk,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
@@ -57,7 +61,11 @@ void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin
         .cs_ena_posttrans = 1,
         .clock_speed_hz = spi_speed,
         .spics_io_num = pin_cs,
+#if defined(ARDUINO_ESP32S3)
+        .flags = SPI_DEVICE_HALFDUPLEX
+#else  
         .flags = SPI_DEVICE_HALFDUPLEX | SPI_DEVICE_3WIRE,
+#endif  
         .queue_size = 1,
         .pre_cb = NULL,
         .post_cb = NULL,
@@ -82,7 +90,14 @@ void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin
         .post_cb = NULL,
     };
     ESP_ERROR_CHECK(spi_bus_add_device(SPI_CMT, &devcfg2, &spi_fifo));
-    esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, true, false);  
+
+#if defined(ARDUINO_ESP32S3)
+    gpio_set_direction(pin_sdio, GPIO_MODE_INPUT_OUTPUT);
+    esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, false, false);
+    esp_rom_gpio_connect_in_signal(pin_sdio, spi_periph_signal[SPI_CMT].spiq_in, false);
+#else   
+    esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, true, false);
+#endif  
 
 // #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
 //     // Pour ESP-IDF 5.x : utiliser les constantes directes
@@ -146,7 +161,11 @@ uint8_t cmt_spi3_read(const uint8_t addr)
     spi_transaction_t t = {
         .cmd = 0,
         .addr = ~addr,
+#if defined(ARDUINO_ESP32S3)
+        .length = 0,
+#else
         .length = 8,
+#endif  
         .rxlength = 8,
         .tx_buffer = NULL,
         .rx_buffer = &rx_data
