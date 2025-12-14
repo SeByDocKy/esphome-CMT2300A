@@ -19,9 +19,9 @@ SemaphoreHandle_t paramLock = NULL;
 // #define USE_HSPI_PORT
 
 // #define SPI_CMT SPI2_HOST
-
+  // // FSPI
 #if defined(ARDUINO_ESP32S3)
-     #define SPI_CMT FSPI
+     #define SPI_CMT SPI3_HOST  
 #else
      #define SPI_CMT SPI2_HOST
 #endif
