@@ -48,11 +48,11 @@ void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin
 
     spi_bus_config_t buscfg = {
         .mosi_io_num = pin_sdio,
-  // #if CONFIG_IDF_TARGET_ESP32S3 && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-  //       .miso_io_num = pin_sdio,
-  // #else
+  #if CONFIG_IDF_TARGET_ESP32S3 && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+        .miso_io_num = pin_sdio,
+  #else
         .miso_io_num = -1, // single wire MOSI/MISO
-  // #endif
+  #endif
         .sclk_io_num = pin_clk,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
@@ -67,11 +67,11 @@ void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin
         .cs_ena_posttrans = 1,
         .clock_speed_hz = spi_speed,
         .spics_io_num = pin_cs,
-// #if CONFIG_IDF_TARGET_ESP32S3 && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-//         .flags = SPI_DEVICE_HALFDUPLEX,
-// #else  
+#if CONFIG_IDF_TARGET_ESP32S3 && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+        .flags = SPI_DEVICE_HALFDUPLEX,
+#else  
         .flags = SPI_DEVICE_HALFDUPLEX | SPI_DEVICE_3WIRE,
-// #endif  
+#endif  
         .queue_size = 1,
         .pre_cb = NULL,
         .post_cb = NULL,
@@ -90,24 +90,24 @@ void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin
         .cs_ena_posttrans = (uint8_t)(1 / (spi_speed * 10e6 * 2) + 2), // >2 us
         .clock_speed_hz = spi_speed,
         .spics_io_num = pin_fcs,
-// #if CONFIG_IDF_TARGET_ESP32S3 && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-//         .flags = SPI_DEVICE_HALFDUPLEX,  // CHANGEMENT: Retirer SPI_DEVICE_3WIRE
-// #else
+#if CONFIG_IDF_TARGET_ESP32S3 && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+        .flags = SPI_DEVICE_HALFDUPLEX,  // CHANGEMENT: Retirer SPI_DEVICE_3WIRE
+#else
         .flags = SPI_DEVICE_HALFDUPLEX | SPI_DEVICE_3WIRE,
-// #endif
+#endif
         .queue_size = 1,
         .pre_cb = NULL,
         .post_cb = NULL,
     };
     ESP_ERROR_CHECK(spi_bus_add_device(SPI_CMT, &devcfg2, &spi_fifo));
 
-// #if CONFIG_IDF_TARGET_ESP32S3 && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-//     gpio_set_direction(pin_sdio, GPIO_MODE_INPUT_OUTPUT);
-//     esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, false, false);
-//     esp_rom_gpio_connect_in_signal(pin_sdio, spi_periph_signal[SPI_CMT].spiq_in, false);
-// #else   
+#if CONFIG_IDF_TARGET_ESP32S3 && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+    gpio_set_direction(pin_sdio, GPIO_MODE_INPUT_OUTPUT);
+    esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, false, false);
+    esp_rom_gpio_connect_in_signal(pin_sdio, spi_periph_signal[SPI_CMT].spiq_in, false);
+#else   
     esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, true, false);
-// #endif  
+#endif  
   
    delay(100);
 }
@@ -135,11 +135,11 @@ uint8_t cmt_spi3_read(const uint8_t addr)
     spi_transaction_t t = {
         .cmd = 0,
         .addr = ~addr,
-// #if CONFIG_IDF_TARGET_ESP32S3 && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-//         .length = 0,
-// #else
+#if CONFIG_IDF_TARGET_ESP32S3 && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+        .length = 0,
+#else
         .length = 8,
-// #endif  
+#endif  
         .rxlength = 8,
         .tx_buffer = NULL,
         .rx_buffer = &rx_data
