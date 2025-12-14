@@ -28,7 +28,7 @@ SemaphoreHandle_t paramLock = NULL;
 //   #define SPI_CMT SPI2_HOST
 // #endf  FSPI
 
-#if CONFIG_IDF_TARGET_ESP32S3 && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+#if (CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32P4) && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
      // #define USE_HSPI_PORT
      // #define SPI_CMT HSPI
      #define SPI_CMT SPI2_HOST
