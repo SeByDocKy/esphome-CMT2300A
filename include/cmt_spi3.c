@@ -20,7 +20,7 @@ SemaphoreHandle_t paramLock = NULL;
 
 // #define SPI_CMT SPI2_HOST
   // // FSPI
-#if defined(ARDUINO_ESP32S3)
+#if CONFIG_IDF_TARGET_ESP32S3 && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
      #define SPI_CMT FSPI   
 #else
      #define SPI_CMT SPI2_HOST
@@ -42,7 +42,7 @@ void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin
 
     spi_bus_config_t buscfg = {
         .mosi_io_num = pin_sdio,
-  #if defined(ARDUINO_ESP32S3)
+  #if CONFIG_IDF_TARGET_ESP32S3 && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
         .miso_io_num = pin_sdio
   #else
         .miso_io_num = -1, // single wire MOSI/MISO
@@ -61,7 +61,7 @@ void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin
         .cs_ena_posttrans = 1,
         .clock_speed_hz = spi_speed,
         .spics_io_num = pin_cs,
-#if defined(ARDUINO_ESP32S3)
+#if CONFIG_IDF_TARGET_ESP32S3 && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
         .flags = SPI_DEVICE_HALFDUPLEX
 #else  
         .flags = SPI_DEVICE_HALFDUPLEX | SPI_DEVICE_3WIRE,
@@ -91,7 +91,7 @@ void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin
     };
     ESP_ERROR_CHECK(spi_bus_add_device(SPI_CMT, &devcfg2, &spi_fifo));
 
-#if defined(ARDUINO_ESP32S3)
+#if CONFIG_IDF_TARGET_ESP32S3 && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
     gpio_set_direction(pin_sdio, GPIO_MODE_INPUT_OUTPUT);
     esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, false, false);
     esp_rom_gpio_connect_in_signal(pin_sdio, spi_periph_signal[SPI_CMT].spiq_in, false);
@@ -133,7 +133,7 @@ uint8_t cmt_spi3_read(const uint8_t addr)
     spi_transaction_t t = {
         .cmd = 0,
         .addr = ~addr,
-#if defined(ARDUINO_ESP32S3)
+#if CONFIG_IDF_TARGET_ESP32S3 && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
         .length = 0,
 #else
         .length = 8,
