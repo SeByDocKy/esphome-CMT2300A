@@ -115,34 +115,34 @@ void cmt_spi3_write(const uint8_t addr, const uint8_t dat)
 uint8_t cmt_spi3_read(const uint8_t addr)
 {
     uint8_t rx_data;
-  #if CONFIG_IDF_TARGET_ESP32S3 || defined(ARDUINO_ESP32_RELEASE_3_0_0)
-    // Pour ESP32-S3 avec Arduino 3.x : séparer en 2 transactions
-    uint8_t tx_addr = ~addr;
-    // Transaction 1: Envoyer l'adresse (TX seulement)
-    spi_transaction_t t_tx = {
-        .flags = 0,
-        .cmd = 0,
-        .addr = 0,
-        .length = 8,
-        .rxlength = 0,
-        .tx_buffer = &tx_addr,
-        .rx_buffer = NULL
-    };
-    SPI_PARAM_LOCK();
-    ESP_ERROR_CHECK(spi_device_polling_transmit(spi_reg, &t_tx));
-    // Transaction 2: Recevoir les données (RX seulement)
-    spi_transaction_t t_rx = {
-        .flags = 0,
-        .cmd = 0,
-        .addr = 0,
-        .length = 8,
-        .rxlength = 8,
-        .tx_buffer = NULL,
-        .rx_buffer = &rx_data
-    };
-    ESP_ERROR_CHECK(spi_device_polling_transmit(spi_reg, &t_rx));
-    SPI_PARAM_UNLOCK();
-#else
+//   #if CONFIG_IDF_TARGET_ESP32S3 || defined(ARDUINO_ESP32_RELEASE_3_0_0)
+//     // Pour ESP32-S3 avec Arduino 3.x : séparer en 2 transactions
+//     uint8_t tx_addr = ~addr;
+//     // Transaction 1: Envoyer l'adresse (TX seulement)
+//     spi_transaction_t t_tx = {
+//         .flags = 0,
+//         .cmd = 0,
+//         .addr = 0,
+//         .length = 8,
+//         .rxlength = 0,
+//         .tx_buffer = &tx_addr,
+//         .rx_buffer = NULL
+//     };
+//     SPI_PARAM_LOCK();
+//     ESP_ERROR_CHECK(spi_device_polling_transmit(spi_reg, &t_tx));
+//     // Transaction 2: Recevoir les données (RX seulement)
+//     spi_transaction_t t_rx = {
+//         .flags = 0,
+//         .cmd = 0,
+//         .addr = 0,
+//         .length = 8,
+//         .rxlength = 8,
+//         .tx_buffer = NULL,
+//         .rx_buffer = &rx_data
+//     };
+//     ESP_ERROR_CHECK(spi_device_polling_transmit(spi_reg, &t_rx));
+//     SPI_PARAM_UNLOCK();
+// #else
     spi_transaction_t t = {
         .cmd = 0,
         .addr = ~addr,
@@ -154,7 +154,7 @@ uint8_t cmt_spi3_read(const uint8_t addr)
     SPI_PARAM_LOCK();
     ESP_ERROR_CHECK(spi_device_polling_transmit(spi_reg, &t));
     SPI_PARAM_UNLOCK();
-#endif  
+// #endif  
     delayMicroseconds(100);
     return rx_data;
 }
