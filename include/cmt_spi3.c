@@ -43,7 +43,7 @@ void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin
     spi_bus_config_t buscfg = {
         .mosi_io_num = pin_sdio,
   #if CONFIG_IDF_TARGET_ESP32S3 && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-        .miso_io_num = pin_sdio
+        .miso_io_num = pin_sdio,
   #else
         .miso_io_num = -1, // single wire MOSI/MISO
   #endif
