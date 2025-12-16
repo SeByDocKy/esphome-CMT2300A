@@ -2,11 +2,6 @@
 #include <Arduino.h>
 #include <driver/spi_master.h>
 #include <driver/gpio.h>
-#include <esp_rom_gpio.h>
-
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-  #include <soc/spi_periph.h>
-#endif
 
 SemaphoreHandle_t paramLock = NULL;
 #define SPI_PARAM_LOCK() \
@@ -14,12 +9,21 @@ SemaphoreHandle_t paramLock = NULL;
     } while (xSemaphoreTake(paramLock, portMAX_DELAY) != pdPASS)
 #define SPI_PARAM_UNLOCK() xSemaphoreGive(paramLock)
 
-// Use SPI2_HOST consistently for all ESP32 variants
-// (HSPI is just an alias for SPI2_HOST on original ESP32, but may not be
-// defined for newer variants like S3/P4)
 #define SPI_CMT SPI2_HOST
 
-spi_device_handle_t spi_reg, spi_fifo;
+// CS pin callbacks for manual chip select control
+static void IRAM_ATTR pre_cb(spi_transaction_t* trans)
+{
+    gpio_set_level(*reinterpret_cast<gpio_num_t*>(trans->user), 0);
+}
+
+static void IRAM_ATTR post_cb(spi_transaction_t* trans)
+{
+    gpio_set_level(*reinterpret_cast<gpio_num_t*>(trans->user), 1);
+}
+
+spi_device_handle_t spi;
+gpio_num_t cs_reg, cs_fifo;
 
 void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin_cs, const int8_t pin_fcs, const uint32_t spi_speed)
 {
@@ -27,7 +31,7 @@ void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin
 
     spi_bus_config_t buscfg = {
         .mosi_io_num = pin_sdio,
-        .miso_io_num = -1,  // SPI_DEVICE_3WIRE uses MOSI bidirectionally, don't set MISO
+        .miso_io_num = -1,  // 3-wire mode uses MOSI bidirectionally
         .sclk_io_num = pin_clk,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
@@ -35,131 +39,127 @@ void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin
     };
 
     spi_device_interface_config_t devcfg = {
-        .command_bits = 1,
-        .address_bits = 7,
+        .command_bits = 0,  // Set per-transaction
+        .address_bits = 0,  // Set per-transaction
         .dummy_bits = 0,
         .mode = 0,  // SPI mode 0
-        .cs_ena_pretrans = 1,
-        .cs_ena_posttrans = 1,
+        .duty_cycle_pos = 0,
+        .cs_ena_pretrans = 2,
+        .cs_ena_posttrans = (uint8_t)(2 * spi_speed / 1000000),  // >2 us
         .clock_speed_hz = spi_speed,
-        .spics_io_num = pin_cs,
+        .input_delay_ns = 0,
+        .spics_io_num = -1,  // CS handled manually via callbacks
         .flags = SPI_DEVICE_HALFDUPLEX | SPI_DEVICE_3WIRE,
         .queue_size = 1,
-        .pre_cb = NULL,
-        .post_cb = NULL,
+        .pre_cb = pre_cb,
+        .post_cb = post_cb,
     };
 
     ESP_ERROR_CHECK(spi_bus_initialize(SPI_CMT, &buscfg, SPI_DMA_DISABLED));
-    ESP_ERROR_CHECK(spi_bus_add_device(SPI_CMT, &devcfg, &spi_reg));
+    ESP_ERROR_CHECK(spi_bus_add_device(SPI_CMT, &devcfg, &spi));
 
-    // FIFO device
-    spi_device_interface_config_t devcfg2 = {
-        .command_bits = 0,
-        .address_bits = 0,
-        .dummy_bits = 0,
-        .mode = 0,  // SPI mode 0
-        .cs_ena_pretrans = 2,
-        .cs_ena_posttrans = (uint8_t)(1 / (spi_speed * 10e6 * 2) + 2),  // >2 us
-        .clock_speed_hz = spi_speed,
-        .spics_io_num = pin_fcs,
-        .flags = SPI_DEVICE_HALFDUPLEX | SPI_DEVICE_3WIRE,
-        .queue_size = 1,
-        .pre_cb = NULL,
-        .post_cb = NULL,
-    };
-    ESP_ERROR_CHECK(spi_bus_add_device(SPI_CMT, &devcfg2, &spi_fifo));
+    // Configure CS pins manually
+    cs_reg = static_cast<gpio_num_t>(pin_cs);
+    ESP_ERROR_CHECK(gpio_reset_pin(cs_reg));
+    ESP_ERROR_CHECK(gpio_set_level(cs_reg, 1));
+    ESP_ERROR_CHECK(gpio_set_direction(cs_reg, GPIO_MODE_OUTPUT));
 
-#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
-    // ESP-IDF 4.x: Manually invert the output signal
-    esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, true, false);
-#endif
-    // ESP-IDF 5.x: Driver handles GPIO routing for SPI_DEVICE_3WIRE automatically
+    cs_fifo = static_cast<gpio_num_t>(pin_fcs);
+    ESP_ERROR_CHECK(gpio_reset_pin(cs_fifo));
+    ESP_ERROR_CHECK(gpio_set_level(cs_fifo, 1));
+    ESP_ERROR_CHECK(gpio_set_direction(cs_fifo, GPIO_MODE_OUTPUT));
 
     delay(100);
 }
 
 void cmt_spi3_write(const uint8_t addr, const uint8_t dat)
 {
-    uint8_t tx_data = ~dat;
-    spi_transaction_t t = {
-        .cmd = 1,
-        .addr = ~addr,
-        .length = 8,
-        .rxlength = 0,
-        .tx_buffer = &tx_data,
-        .rx_buffer = NULL
+    spi_transaction_ext_t trans = {
+        .base = {
+            .flags = SPI_TRANS_VARIABLE_CMD | SPI_TRANS_VARIABLE_ADDR,
+            .cmd = 0,       // Write command
+            .addr = addr,
+            .length = 8,
+            .rxlength = 0,
+            .user = &cs_reg,
+            .tx_buffer = &dat,
+            .rx_buffer = NULL,
+        },
+        .command_bits = 1,
+        .address_bits = 7,
+        .dummy_bits = 0,
     };
     SPI_PARAM_LOCK();
-    ESP_ERROR_CHECK(spi_device_polling_transmit(spi_reg, &t));
+    ESP_ERROR_CHECK(spi_device_polling_transmit(spi, reinterpret_cast<spi_transaction_t*>(&trans)));
     SPI_PARAM_UNLOCK();
-    delayMicroseconds(100);
 }
 
 uint8_t cmt_spi3_read(const uint8_t addr)
 {
-    uint8_t rx_data = 0;
-    spi_transaction_t t = {
-        .cmd = 0,
-        .addr = ~addr,
-        // ESP-IDF 5.x requires length=0 for read-only transactions in half-duplex mode
-        // ESP-IDF 4.x used length=8 for both TX and RX phases
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-        .length = 0,
-#else
-        .length = 8,
-#endif
-        .rxlength = 8,
-        .tx_buffer = NULL,
-        .rx_buffer = &rx_data
+    uint8_t data = 0;
+    spi_transaction_ext_t trans = {
+        .base = {
+            .flags = SPI_TRANS_VARIABLE_CMD | SPI_TRANS_VARIABLE_ADDR,
+            .cmd = 1,       // Read command
+            .addr = addr,
+            .length = 0,
+            .rxlength = 8,
+            .user = &cs_reg,
+            .tx_buffer = NULL,
+            .rx_buffer = &data,
+        },
+        .command_bits = 1,
+        .address_bits = 7,
+        .dummy_bits = 0,
     };
     SPI_PARAM_LOCK();
-    ESP_ERROR_CHECK(spi_device_polling_transmit(spi_reg, &t));
+    ESP_ERROR_CHECK(spi_device_polling_transmit(spi, reinterpret_cast<spi_transaction_t*>(&trans)));
     SPI_PARAM_UNLOCK();
-    delayMicroseconds(100);
-    return rx_data;
+    return data;
 }
 
 void cmt_spi3_write_fifo(const uint8_t* buf, const uint16_t len)
 {
-    uint8_t tx_data;
-
-    spi_transaction_t t = {
+    spi_transaction_t trans = {
+        .flags = 0,
+        .cmd = 0,
+        .addr = 0,
         .length = 8,
         .rxlength = 0,
-        .tx_buffer = &tx_data,
-        .rx_buffer = NULL
+        .user = &cs_fifo,
+        .tx_buffer = NULL,
+        .rx_buffer = NULL,
     };
 
     SPI_PARAM_LOCK();
-    for (uint8_t i = 0; i < len; i++) {
-        tx_data = ~buf[i];  // Negate buffer contents
-        ESP_ERROR_CHECK(spi_device_polling_transmit(spi_fifo, &t));
-        delayMicroseconds(4);  // > 4 us
+    spi_device_acquire_bus(spi, portMAX_DELAY);
+    for (uint16_t i = 0; i < len; i++) {
+        trans.tx_buffer = buf + i;
+        ESP_ERROR_CHECK(spi_device_polling_transmit(spi, &trans));
     }
+    spi_device_release_bus(spi);
     SPI_PARAM_UNLOCK();
 }
 
 void cmt_spi3_read_fifo(uint8_t* buf, const uint16_t len)
 {
-    uint8_t rx_data;
-
-    spi_transaction_t t = {
-        // ESP-IDF 5.x requires length=0 for read-only transactions
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+    spi_transaction_t trans = {
+        .flags = 0,
+        .cmd = 0,
+        .addr = 0,
         .length = 0,
-#else
-        .length = 8,
-#endif
         .rxlength = 8,
+        .user = &cs_fifo,
         .tx_buffer = NULL,
-        .rx_buffer = &rx_data
+        .rx_buffer = NULL,
     };
 
     SPI_PARAM_LOCK();
-    for (uint8_t i = 0; i < len; i++) {
-        ESP_ERROR_CHECK(spi_device_polling_transmit(spi_fifo, &t));
-        delayMicroseconds(4);  // > 4 us
-        buf[i] = rx_data;
+    spi_device_acquire_bus(spi, portMAX_DELAY);
+    for (uint16_t i = 0; i < len; i++) {
+        trans.rx_buffer = buf + i;
+        ESP_ERROR_CHECK(spi_device_polling_transmit(spi, &trans));
     }
+    spi_device_release_bus(spi);
     SPI_PARAM_UNLOCK();
 }
