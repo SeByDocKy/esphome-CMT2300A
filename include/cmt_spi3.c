@@ -14,12 +14,12 @@ SemaphoreHandle_t paramLock = NULL;
 // CS pin callbacks for manual chip select control
 static void IRAM_ATTR pre_cb(spi_transaction_t* trans)
 {
-    gpio_set_level(*reinterpret_cast<gpio_num_t*>(trans->user), 0);
+    gpio_set_level(*(gpio_num_t*)trans->user, 0);
 }
 
 static void IRAM_ATTR post_cb(spi_transaction_t* trans)
 {
-    gpio_set_level(*reinterpret_cast<gpio_num_t*>(trans->user), 1);
+    gpio_set_level(*(gpio_num_t*)trans->user, 1);
 }
 
 spi_device_handle_t spi;
@@ -59,12 +59,12 @@ void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin
     ESP_ERROR_CHECK(spi_bus_add_device(SPI_CMT, &devcfg, &spi));
 
     // Configure CS pins manually
-    cs_reg = static_cast<gpio_num_t>(pin_cs);
+    cs_reg = (gpio_num_t)pin_cs;
     ESP_ERROR_CHECK(gpio_reset_pin(cs_reg));
     ESP_ERROR_CHECK(gpio_set_level(cs_reg, 1));
     ESP_ERROR_CHECK(gpio_set_direction(cs_reg, GPIO_MODE_OUTPUT));
 
-    cs_fifo = static_cast<gpio_num_t>(pin_fcs);
+    cs_fifo = (gpio_num_t)pin_fcs;
     ESP_ERROR_CHECK(gpio_reset_pin(cs_fifo));
     ESP_ERROR_CHECK(gpio_set_level(cs_fifo, 1));
     ESP_ERROR_CHECK(gpio_set_direction(cs_fifo, GPIO_MODE_OUTPUT));
@@ -90,7 +90,7 @@ void cmt_spi3_write(const uint8_t addr, const uint8_t dat)
         .dummy_bits = 0,
     };
     SPI_PARAM_LOCK();
-    ESP_ERROR_CHECK(spi_device_polling_transmit(spi, reinterpret_cast<spi_transaction_t*>(&trans)));
+    ESP_ERROR_CHECK(spi_device_polling_transmit(spi, (spi_transaction_t*)&trans));
     SPI_PARAM_UNLOCK();
 }
 
@@ -113,7 +113,7 @@ uint8_t cmt_spi3_read(const uint8_t addr)
         .dummy_bits = 0,
     };
     SPI_PARAM_LOCK();
-    ESP_ERROR_CHECK(spi_device_polling_transmit(spi, reinterpret_cast<spi_transaction_t*>(&trans)));
+    ESP_ERROR_CHECK(spi_device_polling_transmit(spi, (spi_transaction_t*)&trans));
     SPI_PARAM_UNLOCK();
     return data;
 }
