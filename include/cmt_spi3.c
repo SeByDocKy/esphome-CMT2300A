@@ -101,13 +101,13 @@ void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin
     };
     ESP_ERROR_CHECK(spi_bus_add_device(SPI_CMT, &devcfg2, &spi_fifo));
 
-#if (CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32P4) && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-    gpio_set_direction(pin_sdio, GPIO_MODE_INPUT_OUTPUT);
-    esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, false, false);
-    esp_rom_gpio_connect_in_signal(pin_sdio, spi_periph_signal[SPI_CMT].spiq_in, false);
-#else   
+// #if (CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32P4) && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+//     gpio_set_direction(pin_sdio, GPIO_MODE_INPUT_OUTPUT);
+//     esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, false, false);
+//     esp_rom_gpio_connect_in_signal(pin_sdio, spi_periph_signal[SPI_CMT].spiq_in, false);
+// #else   
     esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, true, false);
-#endif  
+// #endif  
   
    delay(100);
 }
@@ -135,11 +135,11 @@ uint8_t cmt_spi3_read(const uint8_t addr)
     spi_transaction_t t = {
         .cmd = 0,
         .addr = ~addr,
-// #if (CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32P4) && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-//         .length = 0,
-// #else
+#if (CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32P4) && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+        .length = 0,
+#else
         .length = 8,
-// #endif  
+#endif  
         .rxlength = 8,
         .tx_buffer = NULL,
         .rx_buffer = &rx_data
