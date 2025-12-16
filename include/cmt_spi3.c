@@ -27,11 +27,7 @@ void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin
 
     spi_bus_config_t buscfg = {
         .mosi_io_num = pin_sdio,
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-        .miso_io_num = pin_sdio,  // Same pin for bidirectional 3-wire SPI
-#else
-        .miso_io_num = -1,  // Single wire MOSI/MISO
-#endif
+        .miso_io_num = -1,  // SPI_DEVICE_3WIRE uses MOSI bidirectionally, don't set MISO
         .sclk_io_num = pin_clk,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
@@ -73,16 +69,11 @@ void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin
     };
     ESP_ERROR_CHECK(spi_bus_add_device(SPI_CMT, &devcfg2, &spi_fifo));
 
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-    // ESP-IDF 5.x: Configure GPIO for bidirectional operation on MOSI pin
-    // For 3-wire SPI, we use the MOSI pin (spid) for both TX and RX
-    // The input signal must be spid_in (NOT spiq_in which is for MISO)
-    gpio_set_direction((gpio_num_t)pin_sdio, GPIO_MODE_INPUT_OUTPUT);
-    esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, false, false);
-    esp_rom_gpio_connect_in_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_in, false);
-#else
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
+    // ESP-IDF 4.x: Manually invert the output signal
     esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, true, false);
 #endif
+    // ESP-IDF 5.x: Driver handles GPIO routing for SPI_DEVICE_3WIRE automatically
 
     delay(100);
 }
