@@ -68,7 +68,7 @@ void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin
         .clock_speed_hz = spi_speed,
         .spics_io_num = pin_cs,
 #if (CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32P4) && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-        .flags = SPI_DEVICE_HALFDUPLEX,
+        .flags = SPI_DEVICE_HALFDUPLEX | SPI_DEVICE_3WIRE,
 #else  
         .flags = SPI_DEVICE_HALFDUPLEX | SPI_DEVICE_3WIRE,
 #endif  
@@ -91,7 +91,7 @@ void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin
         .clock_speed_hz = spi_speed,
         .spics_io_num = pin_fcs,
 #if (CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32P4) && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-        .flags = SPI_DEVICE_HALFDUPLEX,  // CHANGEMENT: Retirer SPI_DEVICE_3WIRE
+        .flags = SPI_DEVICE_HALFDUPLEX | SPI_DEVICE_3WIRE,  // CHANGEMENT: Retirer SPI_DEVICE_3WIRE
 #else
         .flags = SPI_DEVICE_HALFDUPLEX | SPI_DEVICE_3WIRE,
 #endif
@@ -101,13 +101,13 @@ void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin
     };
     ESP_ERROR_CHECK(spi_bus_add_device(SPI_CMT, &devcfg2, &spi_fifo));
 
-// #if (CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32P4) && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-//     gpio_set_direction(pin_sdio, GPIO_MODE_INPUT_OUTPUT);
-//     esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, false, false);
-//     esp_rom_gpio_connect_in_signal(pin_sdio, spi_periph_signal[SPI_CMT].spiq_in, false);
-// #else   
+#if (CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32P4) && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+    gpio_set_direction(pin_sdio, GPIO_MODE_INPUT_OUTPUT);
+    esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, false, false);
+    esp_rom_gpio_connect_in_signal(pin_sdio, spi_periph_signal[SPI_CMT].spiq_in, false);
+#else   
     esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, true, false);
-// #endif  
+#endif  
   
    delay(100);
 }
