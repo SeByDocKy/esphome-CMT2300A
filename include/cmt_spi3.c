@@ -135,11 +135,11 @@ uint8_t cmt_spi3_read(const uint8_t addr)
     spi_transaction_t t = {
         .cmd = 0,
         .addr = ~addr,
-#if (CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32P4) && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-        .length = 0,
-#else
+// #if (CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32P4) && ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+//         .length = 0,
+// #else
         .length = 8,
-#endif  
+// #endif  
         .rxlength = 8,
         .tx_buffer = NULL,
         .rx_buffer = &rx_data
