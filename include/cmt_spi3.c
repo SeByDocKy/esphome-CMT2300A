@@ -7,8 +7,8 @@
   #include <esp_rom_gpio.h> // for esp_rom_gpio_connect_out_signal
 #endif  
 
-#if CONFIG_IDF_TARGET_ESP32 AND ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-  #include <soc/spi_periph.h>
+#if CONFIG_IDF_TARGET_ESP32    
+  #include <soc/spi_periph.h>  // AND ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
 #endif
 
 SemaphoreHandle_t paramLock = NULL;
