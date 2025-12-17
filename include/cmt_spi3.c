@@ -2,7 +2,6 @@
 #include <Arduino.h>
 #include <driver/spi_master.h>
 #include <esp_rom_gpio.h> // for esp_rom_gpio_connect_out_signal
-
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
   #include <soc/spi_periph.h>
 #endif
@@ -16,23 +15,7 @@ SemaphoreHandle_t paramLock = NULL;
 // for ESP32 this is the so-called HSPI
 // for ESP32-S2/S3/C3 this nomenclature does not really exist anymore,
 // it is simply the first externally usable hardware SPI master controller
-// #define USE_HSPI_PORT
-
-// #define SPI_CMT SPI2_HOST
-
-#if defined(ARDUINO_ESP32S3)
-     #define SPI_CMT FSPI
-#else
-     #define SPI_CMT SPI2_HOST
-#endif
-
-// #if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
-//   #define SPI_CMT FSPI
-// #else
-//   #define SPI_CMT SPI2_HOST
-// #endf
-
-
+#define SPI_CMT SPI2_HOST
 
 spi_device_handle_t spi_reg, spi_fifo;
 
