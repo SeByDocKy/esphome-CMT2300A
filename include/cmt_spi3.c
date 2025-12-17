@@ -13,7 +13,25 @@ SemaphoreHandle_t paramLock = NULL;
     } while (xSemaphoreTake(paramLock, portMAX_DELAY) != pdPASS)
 #define SPI_PARAM_UNLOCK() xSemaphoreGive(paramLock)
 
-#define SPI_CMT SPI2_HOST
+// for ESP32 this is the so-called HSPI
+// for ESP32-S2/S3/C3 this nomenclature does not really exist anymore,
+// it is simply the first externally usable hardware SPI master controller
+// #define USE_HSPI_PORT
+
+// #define SPI_CMT SPI2_HOST
+
+#if defined(ARDUINO_ESP32S3)
+     #define SPI_CMT FSPI
+#else
+     #define SPI_CMT SPI2_HOST
+#endif
+
+// #if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+//   #define SPI_CMT FSPI
+// #else
+//   #define SPI_CMT SPI2_HOST
+// #endf
+
 
 
 spi_device_handle_t spi_reg, spi_fifo;
@@ -64,10 +82,16 @@ void cmt_spi3_init(const int8_t pin_sdio, const int8_t pin_clk, const int8_t pin
         .post_cb = NULL,
     };
     ESP_ERROR_CHECK(spi_bus_add_device(SPI_CMT, &devcfg2, &spi_fifo));
+    esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, true, false);  
 
-    esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, true, false);
-
-  
+// #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+//     // Pour ESP-IDF 5.x : utiliser les constantes directes
+//   // esp_rom_gpio_connect_out_signal(pin_sdio, SPI2_D_OUT_IDX, true, false); 
+ 
+// #else
+//   esp_rom_gpio_connect_out_signal(pin_sdio, spi_periph_signal[SPI_CMT].spid_out, true, false);
+// #endif
+    
    delay(100);
 }
 
@@ -101,7 +125,7 @@ uint8_t cmt_spi3_read(const uint8_t addr)
     };
     SPI_PARAM_LOCK();
     ESP_ERROR_CHECK(spi_device_polling_transmit(spi_reg, &t));
-    SPI_PARAM_UNLOCK(); 
+    SPI_PARAM_UNLOCK();
     delayMicroseconds(100);
     return rx_data;
 }
